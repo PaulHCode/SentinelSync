@@ -1,0 +1,11 @@
+{
+    "bindings": [
+        {
+            "name": "BlobTrigger",
+            "type": "blobTrigger",
+            "direction": "in",
+            "path": "sentinelanalyticsinput",
+            "connection": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING"
+        }
+    ]
+}
