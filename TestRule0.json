@@ -1,0 +1,20 @@
+[
+  {
+    "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/resourceGroupName/providers/Microsoft.OperationalInsights/workspaces/loganalyticsname/providers/Microsoft.SecurityInsights/alertRules/89dcb023-ee61-4ac2-a2ed-0880edffad58",
+    "name": "89dcb023-ee61-4ac2-a2ed-0880edffad58",
+    "etag": "\"5001889a-0000-2700-0000-66cc82390000\"",
+    "type": "Microsoft.SecurityInsights/alertRules",
+    "kind": "MicrosoftSecurityIncidentCreation",
+    "properties": {
+      "productFilter": "Azure Advanced Threat Protection",
+      "severitiesFilter": null,
+      "displayNamesFilter": null,
+      "displayNamesExcludeFilter": null,
+      "displayName": "PaulTest",
+      "enabled": true,
+      "description": "PaulTest",
+      "alertRuleTemplateName": null,
+      "lastModifiedUtc": "2024-08-26T13:25:13.0811764Z"
+    }
+  }
+]
