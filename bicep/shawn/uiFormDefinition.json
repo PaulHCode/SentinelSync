@@ -38,7 +38,7 @@
 							"type": "Microsoft.Common.TextBox",
 							"label": "Package Uri",
 							"subLabel": "",
-							"defaultValue": "https://github.com/shawntmeyer/SentinelSync/blob/Deployment/SentinelSync.zip",
+							"defaultValue": "https://github.com/shawntmeyer/SentinelSync/raw/refs/heads/Deployment/SentinelSync.zip",
 							"toolTip": "",
 							"constraints": {
 								"required": false,
@@ -51,7 +51,6 @@
 						},
 						{
 							"name": "powerShellVersion",
-							"type": "Microsoft.Common.TextBox",
 							"label": "Power Shell Version",
 							"subLabel": "",
 							"defaultValue": "7.4",
