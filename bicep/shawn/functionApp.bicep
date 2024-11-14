@@ -18,6 +18,7 @@ param sentinelSubscriptionId string = subscription().subscriptionId
 @description('The Sentinel Resource Group Name')
 param sentinelResourceGroupName string
 
+var cloudSuffix = replace(replace(environment().resourceManager, 'https://management.', ''), '/', '')
 var hostingPlanName = functionAppName
 var applicationInsightsName = functionAppName
 var storageAccountName = '${uniqueString(resourceGroup().id, functionAppName)}azfunctions'
@@ -118,6 +119,14 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
           value: '${storageAccount.properties.primaryEndpoints.blob}${sentinelAnalyticsContainerNames[1]}'
         }
       ]
+      cors: {
+        allowedOrigins: [
+          '${environment().portal}'
+          'https://functions-next.${cloudSuffix}'
+          'https://functions-staging.${cloudSuffix}'
+          'https://functions.${cloudSuffix}'
+        ]
+      }
       use32BitWorkerProcess: false
       ftpsState: 'FtpsOnly'
       minTlsVersion: '1.2'

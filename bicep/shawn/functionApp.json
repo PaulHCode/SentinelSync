@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.31.34.60546",
-      "templateHash": "3175929460527943897"
+      "templateHash": "1641464896361295292"
     }
   },
   "parameters": {
@@ -25,7 +25,7 @@
     },
     "packageUri": {
       "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/PaulHCode/SentinelSync/refs/heads/deploy/SentinelSync.zip"
+      "defaultValue": "https://github.com/shawntmeyer/SentinelSync/blob/Deployment/SentinelSync.zip"
     },
     "powerShellVersion": {
       "type": "string",
@@ -55,6 +55,7 @@
     }
   },
   "variables": {
+    "cloudSuffix": "[replace(replace(environment().resourceManager, 'https://management.', ''), '/', '')]",
     "hostingPlanName": "[parameters('functionAppName')]",
     "applicationInsightsName": "[parameters('functionAppName')]",
     "storageAccountName": "[format('{0}azfunctions', uniqueString(resourceGroup().id, parameters('functionAppName')))]",
@@ -165,6 +166,14 @@
               "value": "[format('{0}{1}', reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2022-05-01').primaryEndpoints.blob, variables('sentinelAnalyticsContainerNames')[1])]"
             }
           ],
+          "cors": {
+            "allowedOrigins": [
+              "[format('{0}', environment().portal)]",
+              "[format('https://functions-next.{0}', variables('cloudSuffix'))]",
+              "[format('https://functions-staging.{0}', variables('cloudSuffix'))]",
+              "[format('https://functions.{0}', variables('cloudSuffix'))]"
+            ]
+          },
           "use32BitWorkerProcess": false,
           "ftpsState": "FtpsOnly",
           "minTlsVersion": "1.2",
