@@ -52,6 +52,7 @@
 						{
 							"name": "powerShellVersion",
 							"label": "Power Shell Version",
+                            "type": "Microsoft.Common.TextBox",
 							"subLabel": "",
 							"defaultValue": "7.4",
 							"toolTip": "The PowerShell version",
