@@ -157,7 +157,7 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-module roleAssignmentStorageAccount 'roleAssignment-storageAccount.bicep' = {
+module roleAssignmentStorageAccount 'modules/roleAssignment-storageAccount.bicep' = {
   name: 'roleAssignment-storageAccount'
   params: {
     principalId: functionApp.identity.principalId
@@ -166,7 +166,7 @@ module roleAssignmentStorageAccount 'roleAssignment-storageAccount.bicep' = {
   }
 }
 
-module logAnalyticsSentinelContributorRoleAssignment 'roleAssignment-logAnalyticsWorkspace.bicep' = {
+module logAnalyticsSentinelContributorRoleAssignment 'modules/roleAssignment-logAnalyticsWorkspace.bicep' = {
   name: 'roleAssignment-logAnalyticsWorkspace'
   scope: resourceGroup(sentinelSubscriptionId, sentinelResourceGroupName)
   params: {
