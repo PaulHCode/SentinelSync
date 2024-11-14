@@ -15,33 +15,53 @@ param storageFileDnsZoneId string
 param storageQueueDnsZoneId string
 param storageTableDnsZoneId string
 param tags object
+param sentinelAnalyticsOutputContainerName string
+param sentinelAnalyticsInputContainerName string
 
 var storageAccountNameVar = deployStorageAccount ? storageAccountName : last(split(storageAccountId, '/'))
 var vnetName = split(storageAccountPrivateEndpointSubnetId, '/')[8]
-var storageAccountPrivateEndpoints = enableStoragePrivateEndpoints ? [
-  {
-    name: replace(replace(replace(nameConvPrivEndpoints, 'RESOURCENAME', storageAccountNameVar), 'SERVICE', 'blob'), 'VNET', vnetName)
-    privateDnsZoneId: storageBlobDnsZoneId 
-    service: 'blob'
-  }
-  {
-    name: replace(replace(replace(nameConvPrivEndpoints, 'RESOURCENAME', storageAccountNameVar), 'SERVICE', 'file'), 'VNET', vnetName)
-    privateDnsZoneId: storageFileDnsZoneId
-    service: 'file'
-  }
-  {
-    name: replace(replace(replace(nameConvPrivEndpoints, 'RESOURCENAME', storageAccountNameVar), 'SERVICE', 'queue'), 'VNET', vnetName)
-    privateDnsZoneId: storageQueueDnsZoneId
-    service: 'queue'
-  }
-  {
-    name: replace(replace(replace(nameConvPrivEndpoints, 'RESOURCENAME', storageAccountNameVar), 'SERVICE', 'table'), 'VNET', vnetName)
-    privateDnsZoneId: storageTableDnsZoneId
-    service: 'table'
-  }
-] : []
+var storageAccountPrivateEndpoints = enableStoragePrivateEndpoints
+  ? [
+      {
+        name: replace(
+          replace(replace(nameConvPrivEndpoints, 'RESOURCENAME', storageAccountNameVar), 'SERVICE', 'blob'),
+          'VNET',
+          vnetName
+        )
+        privateDnsZoneId: storageBlobDnsZoneId
+        service: 'blob'
+      }
+      {
+        name: replace(
+          replace(replace(nameConvPrivEndpoints, 'RESOURCENAME', storageAccountNameVar), 'SERVICE', 'file'),
+          'VNET',
+          vnetName
+        )
+        privateDnsZoneId: storageFileDnsZoneId
+        service: 'file'
+      }
+      {
+        name: replace(
+          replace(replace(nameConvPrivEndpoints, 'RESOURCENAME', storageAccountNameVar), 'SERVICE', 'queue'),
+          'VNET',
+          vnetName
+        )
+        privateDnsZoneId: storageQueueDnsZoneId
+        service: 'queue'
+      }
+      {
+        name: replace(
+          replace(replace(nameConvPrivEndpoints, 'RESOURCENAME', storageAccountNameVar), 'SERVICE', 'table'),
+          'VNET',
+          vnetName
+        )
+        privateDnsZoneId: storageTableDnsZoneId
+        service: 'table'
+      }
+    ]
+  : []
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = if(deployStorageAccount) {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = if (deployStorageAccount) {
   name: storageAccountNameVar
   location: location
   tags: tags[?'Microsoft.Storage/storageAccounts'] ?? {}
@@ -89,15 +109,14 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = if(depl
     }
   }
   resource blobServices 'blobServices' = {
-    name: 'default'    
-  }
-  resource fileServices 'fileServices' = if(hostPlanType != 'AppServicePlan' && hostPlanType != 'FlexConsumption') {
     name: 'default'
   }
-  
+  resource fileServices 'fileServices' = if (hostPlanType != 'AppServicePlan' && hostPlanType != 'FlexConsumption') {
+    name: 'default'
+  }
 }
 
-resource shareNewAccount 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-01-01' = if(deployStorageAccount && hostPlanType != 'AppServicePlan' && hostPlanType != 'FlexConsumption') {
+resource shareNewAccount 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-01-01' = if (deployStorageAccount && hostPlanType != 'AppServicePlan' && hostPlanType != 'FlexConsumption') {
   name: fileShareName
   parent: storageAccount::fileServices
   properties: {
@@ -114,16 +133,32 @@ resource blobContainerNewAccount 'Microsoft.Storage/storageAccounts/blobServices
   }
 }
 
-resource existingStorageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' existing = if(!deployStorageAccount && !empty(storageAccountId)) {
+resource sentinelAnalyticsInputContainerNewAccount 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = if (deployStorageAccount) {
+  name: sentinelAnalyticsInputContainerName
+  parent: storageAccount::blobServices
+  properties: {
+    publicAccess: 'None'
+  }
+}
+
+resource sentinelAnalyticsOutputContainerNewAccount 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = if (deployStorageAccount) {
+  name: sentinelAnalyticsOutputContainerName
+  parent: storageAccount::blobServices
+  properties: {
+    publicAccess: 'None'
+  }
+}
+
+resource existingStorageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' existing = if (!deployStorageAccount && !empty(storageAccountId)) {
   name: storageAccountNameVar
 }
 
-resource fileServicesExistingAccount 'Microsoft.Storage/storageAccounts/fileServices@2023-01-01' = if(!deployStorageAccount && !empty(storageAccountId) && hostPlanType != 'AppServicePlan' && hostPlanType != 'FlexConsumption') {
+resource fileServicesExistingAccount 'Microsoft.Storage/storageAccounts/fileServices@2023-01-01' = if (!deployStorageAccount && !empty(storageAccountId) && hostPlanType != 'AppServicePlan' && hostPlanType != 'FlexConsumption') {
   name: 'default'
   parent: existingStorageAccount
 }
 
-resource fileShareExistingAccount 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-01-01' = if(!deployStorageAccount && !empty(storageAccountId) && hostPlanType != 'AppServicePlan' && hostPlanType != 'FlexConsumption') {
+resource fileShareExistingAccount 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-01-01' = if (!deployStorageAccount && !empty(storageAccountId) && hostPlanType != 'AppServicePlan' && hostPlanType != 'FlexConsumption') {
   name: fileShareName
   parent: fileServicesExistingAccount
   properties: {
@@ -132,12 +167,12 @@ resource fileShareExistingAccount 'Microsoft.Storage/storageAccounts/fileService
   }
 }
 
-resource blobServicesExistingAccount 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = if(!deployStorageAccount && !empty(storageAccountId) && (hostPlanType == 'AppServicePlan' || hostPlanType == 'FlexConsumption')) {
+resource blobServicesExistingAccount 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = if (!deployStorageAccount && !empty(storageAccountId) && (hostPlanType == 'AppServicePlan' || hostPlanType == 'FlexConsumption')) {
   name: 'default'
   parent: existingStorageAccount
 }
 
-resource container 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = if(!deployStorageAccount && !empty(storageAccountId) && hostPlanType == 'FlexConsumption') {
+resource container 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = if (!deployStorageAccount && !empty(storageAccountId) && hostPlanType == 'FlexConsumption') {
   name: containerName
   parent: blobServicesExistingAccount
   properties: {
@@ -145,42 +180,64 @@ resource container 'Microsoft.Storage/storageAccounts/blobServices/containers@20
   }
 }
 
-resource storageAccount_privateEndpoints 'Microsoft.Network/privateEndpoints@2021-02-01' = [for (privateEndpoint, i) in storageAccountPrivateEndpoints: if(enableStoragePrivateEndpoints) {
-  name: privateEndpoint.name
-  location: location
-  tags: tags[?'Microsoft.Network/privateEndpoints'] ?? {}
+resource sentinelAnalyticsInputContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = if (!deployStorageAccount && !empty(storageAccountId)) {
+  name: sentinelAnalyticsInputContainerName
+  parent: blobServicesExistingAccount
   properties: {
-    privateLinkServiceConnections: [
-      {
-        name: '${privateEndpoint.name}-connection'
-        properties: {
-          privateLinkServiceId: deployStorageAccount ? storageAccount.id : existingStorageAccount.id
-          groupIds: [privateEndpoint.service]          
-        }
-      }
-    ]
-    subnet: {
-      id: storageAccountPrivateEndpointSubnetId
-    }      
+    publicAccess: 'None'
   }
-}]
+}
 
-resource storageAccount_PrivateDnsZoneGroups 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-06-01' = [for (privateEndpoint, i) in storageAccountPrivateEndpoints: if(enableStoragePrivateEndpoints && !empty(storageAccountPrivateEndpoints[i].privateDnsZoneId)) {
-  name: '${privateEndpoint.name}-group'
-  parent: storageAccount_privateEndpoints[i]
+resource sentinelAnalyticsOutputContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01' = if (!deployStorageAccount && !empty(storageAccountId)) {
+  name: sentinelAnalyticsOutputContainerName
+  parent: blobServicesExistingAccount
   properties: {
-    privateDnsZoneConfigs: [
-      {
-        name: !empty(privateEndpoint.privateDnsZoneId) ? '${last(split(privateEndpoint.privateDnsZoneId, '/'))}-config' : ''
-        properties: {
-          privateDnsZoneId: privateEndpoint.privateDnsZoneId
-        }
-      }
-    ]
+    publicAccess: 'None'
   }
-}]
+}
 
-resource storageAccount_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if(deployStorageAccount && !empty(logAnalyticsWorkspaceId)) {
+resource storageAccount_privateEndpoints 'Microsoft.Network/privateEndpoints@2021-02-01' = [
+  for (privateEndpoint, i) in storageAccountPrivateEndpoints: if (enableStoragePrivateEndpoints) {
+    name: privateEndpoint.name
+    location: location
+    tags: tags[?'Microsoft.Network/privateEndpoints'] ?? {}
+    properties: {
+      privateLinkServiceConnections: [
+        {
+          name: '${privateEndpoint.name}-connection'
+          properties: {
+            privateLinkServiceId: deployStorageAccount ? storageAccount.id : existingStorageAccount.id
+            groupIds: [privateEndpoint.service]
+          }
+        }
+      ]
+      subnet: {
+        id: storageAccountPrivateEndpointSubnetId
+      }
+    }
+  }
+]
+
+resource storageAccount_PrivateDnsZoneGroups 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-06-01' = [
+  for (privateEndpoint, i) in storageAccountPrivateEndpoints: if (enableStoragePrivateEndpoints && !empty(storageAccountPrivateEndpoints[i].privateDnsZoneId)) {
+    name: '${privateEndpoint.name}-group'
+    parent: storageAccount_privateEndpoints[i]
+    properties: {
+      privateDnsZoneConfigs: [
+        {
+          name: !empty(privateEndpoint.privateDnsZoneId)
+            ? '${last(split(privateEndpoint.privateDnsZoneId, '/'))}-config'
+            : ''
+          properties: {
+            privateDnsZoneId: privateEndpoint.privateDnsZoneId
+          }
+        }
+      ]
+    }
+  }
+]
+
+resource storageAccount_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (deployStorageAccount && !empty(logAnalyticsWorkspaceId)) {
   name: '${storageAccountName}-diagnosticSettings'
   properties: {
     metrics: [
@@ -194,7 +251,7 @@ resource storageAccount_diagnosticSettings 'Microsoft.Insights/diagnosticSetting
   scope: storageAccount
 }
 
-resource storageAccount_blob_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if(deployStorageAccount && !empty(logAnalyticsWorkspaceId)) {
+resource storageAccount_blob_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (deployStorageAccount && !empty(logAnalyticsWorkspaceId)) {
   name: '${storageAccountName}-blob-diagnosticSettings'
   scope: storageAccount::blobServices
   properties: {

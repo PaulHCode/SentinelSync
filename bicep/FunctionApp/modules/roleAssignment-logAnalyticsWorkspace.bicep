@@ -1,13 +1,13 @@
 param principalId string
-param storageAccountResourceId string
+param logAnalyticsWorkspaceId string
 param roleDefinitionId string
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
-  name: last(split(storageAccountResourceId, '/'))
+resource storageAccount 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
+  name: last(split(logAnalyticsWorkspaceId, '/'))
 }
 
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(storageAccountResourceId, roleDefinitionId, principalId)
+  name: guid(logAnalyticsWorkspaceId, roleDefinitionId, principalId)
   scope: storageAccount
   properties: {
     roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', roleDefinitionId)

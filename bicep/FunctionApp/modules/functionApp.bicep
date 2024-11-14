@@ -20,6 +20,8 @@ param runtimeStack string
 param storageAccountResourceId string
 param tags object
 param timestamp string
+param sentinelResourceId string
+param sentinelAnalyticsOutputContainerName string
 
 // existing resources
 
@@ -167,11 +169,37 @@ var flexAppSettings = environment().name == 'AzureCloud'
       }
     ]
 
+var CommonAppSettings = [
+  {
+    name: 'SentinelResourceId'
+    value: sentinelResourceId
+  }
+  {
+    name: 'LogAnalyticsResourceId'
+    value: sentinel.properties.workspaceResourceId
+  }
+  {
+    name: 'SentinelAnalyticsOutputUrl'
+    value: '${storageAccount.properties.primaryEndpoints.blob}${sentinelAnalyticsOutputContainerName}'
+  }
+]
+
+resource sentinel 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' existing = {
+  name: last(split(sentinelResourceId, '/'))
+  scope: resourceGroup(split(sentinelResourceId, '/')[2], split(sentinelResourceId, '/')[4])
+}
+
 var appSettings = hostingPlanType == 'AppServicePlan'
-  ? union(aspAppSettings, appInsightsAppSettings, isolatedAppSettings, windowsAppSettings)
+  ? union(aspAppSettings, appInsightsAppSettings, isolatedAppSettings, windowsAppSettings, CommonAppSettings)
   : (hostingPlanType == 'FlexConsumption'
-      ? union(flexAppSettings, appInsightsAppSettings)
-      : union(consumptionAndPremiumAppSettings, appInsightsAppSettings, isolatedAppSettings, windowsAppSettings))
+      ? union(flexAppSettings, appInsightsAppSettings, CommonAppSettings)
+      : union(
+          consumptionAndPremiumAppSettings,
+          appInsightsAppSettings,
+          isolatedAppSettings,
+          windowsAppSettings,
+          CommonAppSettings
+        ))
 
 // resources
 
@@ -186,7 +214,7 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = if (en
   tags: tags[?'Microsoft.Insights/components'] ?? {}
 }
 
-module updatePrivateLinkScope 'get-PrivateLinkScope.bicep' = if(enableApplicationInsights && !empty(privateLinkScopeResourceId)) {
+module updatePrivateLinkScope 'get-PrivateLinkScope.bicep' = if (enableApplicationInsights && !empty(privateLinkScopeResourceId)) {
   name: 'PrivateLlinkScope-${timestamp}'
   scope: subscription()
   params: {
@@ -200,11 +228,9 @@ module updatePrivateLinkScope 'get-PrivateLinkScope.bicep' = if(enableApplicatio
 
 resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
   name: functionAppName
-  identity: hostingPlanType == 'AppServicePlan' || hostingPlanType == 'FlexConsumption'
-    ? {
-        type: 'SystemAssigned'
-      }
-    : null
+  identity: {
+    type: 'SystemAssigned'
+  }
   kind: functionAppKind
   location: location
   tags: tags[?'Microsoft.Web/sites'] ?? {}
@@ -316,15 +342,25 @@ resource functionApp_diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@
   scope: functionApp
 }
 
-var storageRoleDefinitionId = 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b' //Storage Blob Data Owner role
+var storageRoleDefinitionId = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe' //Storage Blob Data Contributor role
 
 // Allow access from function app to storage account using a managed identity
-module storageBlobDataOwnerRoleAssignment 'roleAssignment-storageAccount.bicep' = if (hostingPlanType == 'AppServicePlan' || hostingPlanType == 'FlexConsumption') {
+module storageBlobDataOwnerRoleAssignment 'roleAssignment-storageAccount.bicep' = {
   name: 'roleAssignment-storageAccount'
   scope: resourceGroup(split(storageAccountResourceId, '/')[2], split(storageAccountResourceId, '/')[4])
   params: {
     principalId: functionApp.identity.principalId
     storageAccountResourceId: storageAccountResourceId
     roleDefinitionId: storageRoleDefinitionId
+  }
+}
+
+module logAnalyticsSentinelContributorRoleAssignment 'roleAssignment-logAnalyticsWorkspace.bicep' = {
+  name: 'roleAssignment-logAnalyticsWorkspace'
+  scope: resourceGroup(split(logAnalyticsWorkspaceId, '/')[2], split(logAnalyticsWorkspaceId, '/')[4])
+  params: {
+    principalId: functionApp.identity.principalId
+    logAnalyticsWorkspaceId: logAnalyticsWorkspaceId
+    roleDefinitionId: 'ab8e14d6-4a74-4a29-9ba8-549422addade' // Sentinel Contributor role'
   }
 }

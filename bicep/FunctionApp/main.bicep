@@ -1,6 +1,8 @@
 // Basics
 targetScope = 'subscription'
 
+param sentinelResourceId string = '/subscriptions/0c6b2020-87d3-439b-a265-cb938773cdb4/resourceGroups/rg-pauharri/providers/Microsoft.OperationsManagement/solutions/testlaw'
+
 @description('The location of all resources deployed by this template.')
 param location string
 
@@ -270,8 +272,8 @@ var existingHostingPlanType = !empty(existingHostingPlan)
       : (contains(existingHostingPlan.sku.tier, 'Elastic') ? 'FunctionsPremium' : 'AppServicePlan'))
   : ''
 var blobContainerName = 'app-package-${toLower(functionAppName)}'
-var locations = (loadJsonContent('../../data/locations.json'))[environment().name]
-var resourceAbbreviations = loadJsonContent('../../data/resourceAbbreviations.json')
+var locations = (loadJsonContent('../locations.json'))[environment().name]
+var resourceAbbreviations = loadJsonContent('../resourceAbbreviations.json')
 
 var nameConvPrivEndpoints = nameConvResTypeAtEnd
   ? 'RESOURCENAME-SERVICE-${locations[location].abbreviation}-${resourceAbbreviations.privateEndpoints}-VNET'
@@ -441,6 +443,8 @@ module storageResources 'modules/storage.bicep' = {
           : storageTableDnsZoneId)
       : ''
     tags: tags
+    sentinelAnalyticsOutputContainerName: sentinelAnalyticsOutputContainerName
+    sentinelAnalyticsInputContainerName: sentinelAnalyticsInputContainerName
   }
 }
 
@@ -448,6 +452,7 @@ module functionAppResources 'modules/functionApp.bicep' = {
   name: 'functionApp-resources-${timestamp}'
   scope: resourceGroup(functionAppResourceGroupName)
   params: {
+    sentinelAnalyticsOutputContainerName: sentinelAnalyticsOutputContainerName
     location: location
     blobContainerName: blobContainerName
     enableApplicationInsights: enableApplicationInsights
@@ -480,6 +485,7 @@ module functionAppResources 'modules/functionApp.bicep' = {
     privateLinkScopeResourceId: privateLinkScopeResourceId
     runtimeStack: runtimeStack
     runtimeVersion: runtimeVersion
+    sentinelResourceId: sentinelResourceId
     storageAccountResourceId: storageResources.outputs.storageAccountResourceId
     logAnalyticsWorkspaceId: logAnalyticsWorkspaceId
     tags: tags
@@ -538,4 +544,12 @@ module ImportSentinelAnalyticsFunction 'modules/function.bicep' = {
   }
 }
 
-var ImportSentinelAnalyticsConnection =()? 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING': 'AzureWebJobsStorage__credential'
+var varHostingPlanType = hostingPlanType == 'Consumption'
+  ? 'Consumption'
+  : (deployHostingPlan ? hostingPlanType : existingHostingPlanType)
+var ImportSentinelAnalyticsConnection = varHostingPlanType == 'AppServicePlan' || varHostingPlanType == 'FlexConsumption'
+  ? 'AzureWebJobsStorage__credential'
+  : 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
+
+var sentinelAnalyticsOutputContainerName = 'sentinelanalyticsoutput'
+var sentinelAnalyticsInputContainerName = 'sentinelanalyticsinput'
