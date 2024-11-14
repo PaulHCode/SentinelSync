@@ -4,7 +4,7 @@ param functionAppName string = 'fnapp${uniqueString(resourceGroup().id)}'
 @description('Location for all resources.')
 param location string = resourceGroup().location
 
-param packageUri string = 'https://github.com/shawntmeyer/SentinelSync/blob/Deployment/SentinelSync.zip'
+param packageUri string = 'https://raw.githubusercontent.com/shawntmeyer/SentinelSync/refs/heads/main/SentinelSyncFA.zip'
 
 @description('The PowerShell version')
 param powerShellVersion string = '7.4'

@@ -32,23 +32,7 @@
 							},
 							"infoMessages": [],
 							"visible": true
-						},
-						{
-							"name": "packageUri",
-							"type": "Microsoft.Common.TextBox",
-							"label": "Package Uri",
-							"subLabel": "",
-							"defaultValue": "https://raw.githubusercontent.com/shawntmeyer/SentinelSync/refs/heads/main/SentinelSyncFA.zip",
-							"toolTip": "",
-							"constraints": {
-								"required": false,
-								"regex": "",
-								"validationMessage": "",
-								"validations": []
-							},
-							"infoMessages": [],
-							"visible": true
-						},
+						},						
 						{
 							"name": "powerShellVersion",
 							"label": "Power Shell Version",
@@ -81,7 +65,6 @@
 			"resourceGroupId": "[steps('basics').resourceScope.resourceGroup.id]",
 			"parameters": {
 				"functionAppName": "[steps('basics').functionAppName]",
-				"packageUri": "[steps('basics').packageUri]",
 				"powerShellVersion": "[steps('basics').powerShellVersion]",
 				"sentinelWorkspaceName": "[last(split(steps('basics').sentinelWorkspace.id, '/'))]",
 				"sentinelSubscriptionId": "[first(skip(split(steps('basics').sentinelWorkspace.id, '/'), 2))]",

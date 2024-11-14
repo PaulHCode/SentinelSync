@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.31.92.45157",
-      "templateHash": "11295707443677012212"
+      "templateHash": "5808763520854498989"
     }
   },
   "parameters": {
@@ -25,7 +25,7 @@
     },
     "packageUri": {
       "type": "string",
-      "defaultValue": "https://github.com/shawntmeyer/SentinelSync/blob/Deployment/SentinelSync.zip"
+      "defaultValue": "https://raw.githubusercontent.com/shawntmeyer/SentinelSync/refs/heads/main/SentinelSyncFA.zip"
     },
     "powerShellVersion": {
       "type": "string",
@@ -58,7 +58,7 @@
     "cloudSuffix": "[replace(replace(environment().resourceManager, 'https://management.', ''), '/', '')]",
     "hostingPlanName": "[parameters('functionAppName')]",
     "applicationInsightsName": "[parameters('functionAppName')]",
-    "storageAccountName": "[take(format('{0}{1}', parameters('functionAppName'), uniqueString(resourceGroup().id, parameters('functionAppName'))), 24)]",
+    "storageAccountName": "[toLower(take(format('{0}{1}', parameters('functionAppName'), uniqueString(resourceGroup().id, parameters('functionAppName'))), 24))]",
     "sentinelAnalyticsContainerNames": [
       "sentinelanalyticsinput",
       "sentinelanalyticsoutput"
