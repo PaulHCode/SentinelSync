@@ -38,7 +38,7 @@
 							"type": "Microsoft.Common.TextBox",
 							"label": "Package Uri",
 							"subLabel": "",
-							"defaultValue": "https://github.com/shawntmeyer/SentinelSync/raw/refs/heads/Deployment/SentinelSync.zip",
+							"defaultValue": "https://github.com/shawntmeyer/SentinelSync/raw/refs/heads/Deployment/SentinelSyncFA.zip",
 							"toolTip": "",
 							"constraints": {
 								"required": false,
