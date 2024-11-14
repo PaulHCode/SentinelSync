@@ -21,7 +21,7 @@ param sentinelResourceGroupName string
 var cloudSuffix = replace(replace(environment().resourceManager, 'https://management.', ''), '/', '')
 var hostingPlanName = functionAppName
 var applicationInsightsName = functionAppName
-var storageAccountName = '${uniqueString(resourceGroup().id, functionAppName)}azfunctions'
+var storageAccountName = toLower(take('${functionAppName}${uniqueString(resourceGroup().id, functionAppName)}', 24))
 var sentinelAnalyticsContainerNames = [
   'sentinelanalyticsinput'
   'sentinelanalyticsoutput'

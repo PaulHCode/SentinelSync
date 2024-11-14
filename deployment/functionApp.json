@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.31.92.45157",
-      "templateHash": "18289661505516777085"
+      "templateHash": "11295707443677012212"
     }
   },
   "parameters": {
@@ -58,7 +58,7 @@
     "cloudSuffix": "[replace(replace(environment().resourceManager, 'https://management.', ''), '/', '')]",
     "hostingPlanName": "[parameters('functionAppName')]",
     "applicationInsightsName": "[parameters('functionAppName')]",
-    "storageAccountName": "[format('{0}azfunctions', uniqueString(resourceGroup().id, parameters('functionAppName')))]",
+    "storageAccountName": "[take(format('{0}{1}', parameters('functionAppName'), uniqueString(resourceGroup().id, parameters('functionAppName'))), 24)]",
     "sentinelAnalyticsContainerNames": [
       "sentinelanalyticsinput",
       "sentinelanalyticsoutput"
