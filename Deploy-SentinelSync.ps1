@@ -4,13 +4,18 @@
 #>
 
 #Deploy the FA - currently not automated
+#commercial cloud
+New-AzResourceGroupDeployment -ResourceGroupName 'SentinelSync2' -TemplateFile .\bicep\deploy-functionapp.bicep -TemplateParameterFile .\bicep\parameters\deploy-functionapp-parameters-example.json
+#government cloud
+$deploymentResult = New-AzResourceGroupDeployment -ResourceGroupName 'SentinelSync2' -TemplateFile .\bicep\deploy-functionapp.bicep -TemplateParameterFile .\bicep\parameters\deploy-functionapp-parameters-examplegov.json
 
 #Get info about the Function App, Log Analytics Workspace, and Storage Account
 $subscriptionId = (Get-AzContext).Subscription.id
-$functionApp = Get-AzFunctionApp | Out-GridView -PassThru -Title 'Select the Function App'
-$functionAppName = $funtionApp.Name
-$functionAppRG = $functionApp.ResourceGroupName
-$settings = Get-AzFunctionAppSetting -Name $functionApp.Name -ResourceGroupName $functionApp.ResourceGroupName -SubscriptionId $functionApp.SubscriptionId
+#$functionApp = Get-AzFunctionApp | Out-GridView -PassThru -Title 'Select the Function App'
+$functionAppName = $deploymentResult.Parameters.functionAppName.Value #$funtionApp.Name
+$functionAppRG = $deploymentResult.ResourceGroupName #$functionApp.ResourceGroupName
+#$settings = Get-AzFunctionAppSetting -Name $functionApp.Name -ResourceGroupName $functionApp.ResourceGroupName -SubscriptionId $functionApp.SubscriptionId
+$settings = Get-AzFunctionAppSetting -Name $functionAppName -ResourceGroupName $functionAppRG -SubscriptionId (Get-AzContext).Subscription.id #$functionApp.SubscriptionId
 $storageAccountName = ($settings.AzureWebJobsStorage.split(';') | Where-Object { $_ -like "AccountName=*" }).split('=')[-1]
 $managedIdentityObjectId = (Get-AzWebApp -ResourceGroupName $functionAppRG -Name $functionAppName).Identity.PrincipalId
 
