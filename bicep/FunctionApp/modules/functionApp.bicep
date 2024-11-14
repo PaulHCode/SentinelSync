@@ -364,3 +364,5 @@ module logAnalyticsSentinelContributorRoleAssignment 'roleAssignment-logAnalytic
     roleDefinitionId: 'ab8e14d6-4a74-4a29-9ba8-549422addade' // Sentinel Contributor role'
   }
 }
+
+output functionAppName string = functionApp.name

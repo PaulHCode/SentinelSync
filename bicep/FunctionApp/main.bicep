@@ -504,7 +504,7 @@ module ExportSentinelAnalyticsFunction 'modules/function.bicep' = {
   name: 'ExportSentinelAnalyticsFunction-${timestamp}'
   scope: resourceGroup(functionAppResourceGroupName)
   params: {
-    functionAppName: functionAppName
+    functionAppName: functionAppResources.outputs.functionAppName
     functionName: 'ExportSentinelAnalytics'
     files: {
       'run.ps1': loadTextContent('../../SentinelSyncFA/ExportSentinelAnalytics/run.ps1')
@@ -526,7 +526,7 @@ module ImportSentinelAnalyticsFunction 'modules/function.bicep' = {
   name: 'ImportSentinelAnalyticsFunction-${timestamp}'
   scope: resourceGroup(functionAppResourceGroupName)
   params: {
-    functionAppName: functionAppName
+    functionAppName: functionAppResources.outputs.functionAppName
     functionName: 'ImportSentinelAnalytics'
     files: {
       'run.ps1': loadTextContent('../../SentinelSyncFA/ImportSentinelAnalytics/run.ps1')
