@@ -137,6 +137,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
 }
 
 resource functions 'Microsoft.Web/sites/extensions@2023-12-01' = {
+  #disable-next-line BCP088
   name: 'ZipDeploy'
   parent: functionApp
   properties: {
