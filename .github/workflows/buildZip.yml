@@ -33,9 +33,7 @@ jobs:
           # Command to perform ("compress" or "decompress").
           command: compress
           # Source directory or file to compress or decompress.
-          source: SentinelSyncFA
-          # Destination directory or file to save the compressed or decompressed output.
-          dest: SentinelSyncFA.zip
+          source: ./SentinelSyncFA
           # Compression format to use. Supported formats include zip, tar, tgz, and tbz2.
           format: zip
           # Whether to include the root folder itself in the compressed file.
