@@ -23,8 +23,8 @@ var hostingPlanName = functionAppName
 var applicationInsightsName = functionAppName
 var storageAccountName = '${uniqueString(resourceGroup().id, functionAppName)}azfunctions'
 var sentinelAnalyticsContainerNames = [
-  'sentinel-analytics-input'
-  'sentinel-analytics-output'
+  'sentinelanalyticsinput'
+  'sentinelanalyticsoutput'
 ]
 
 resource sentinel 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' existing = {

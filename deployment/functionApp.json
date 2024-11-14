@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.31.92.45157",
-      "templateHash": "9942088245426379731"
+      "templateHash": "18289661505516777085"
     }
   },
   "parameters": {
@@ -60,8 +60,8 @@
     "applicationInsightsName": "[parameters('functionAppName')]",
     "storageAccountName": "[format('{0}azfunctions', uniqueString(resourceGroup().id, parameters('functionAppName')))]",
     "sentinelAnalyticsContainerNames": [
-      "sentinel-analytics-input",
-      "sentinel-analytics-output"
+      "sentinelanalyticsinput",
+      "sentinelanalyticsoutput"
     ]
   },
   "resources": [
