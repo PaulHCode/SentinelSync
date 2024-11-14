@@ -2,6 +2,7 @@ param($Timer)
 
 #region Initialize Variables
 $sentinelResourceId = $env:SentinelResourceId
+$sentinelResourceId = $sentinelResourceId.replace('SecurityInsights(', '').replace(')', '')
 $ConnectionStringUri = $env:SentinelAnalyticsOutputURL
 
 $sentinelSubscriptionId = $sentinelResourceId.Split('/')[2]
@@ -9,7 +10,7 @@ $sentinelResourceGroupName = $sentinelResourceId.Split('/')[4]
 $sentinelWorkspaceName = $sentinelResourceId.Split('/')[8]
 $now = ([System.DateTime]::UtcNow).ToString("yyyy-MM-ddTHHmmss")
 
-$rulesToExportStartWith = @('Exploitation', 'Suspicious', 'Anomalous', 'Malicious', 'Behavior', 'Threat', 'Alert', 'Detection', 'Incident', 'Investigation', 'Security')
+$rulesToExportStartWith = @('Exploitation', 'Suspicious', 'Anomalous', 'Malicious', 'Behavior', 'Threat', 'Alert', 'Detection', 'Incident', 'Investigation', 'Security', 'Advanced', 'Paul')
 $rulesToNotExportStartWith = @('Test')
 
 #endregion Initialize Variables
