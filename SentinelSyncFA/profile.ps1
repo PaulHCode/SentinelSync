@@ -360,7 +360,7 @@ Function Remove-SentinelAlertRuleREST {
 
     $resourceManagerToken = Connect-AcquireToken -TokenResourceUrl $ResourceManagerUrl
     #$resourceManagerToken = (Get-AzAccessToken -ResourceUrl $ResourceManagerUrl).token
-    $uri = "$ResourceManagerUrl$RuleId?api-version=2024-03-01"
+    $uri = $ResourceManagerUrl + $RuleId + "?api-version=2024-03-01"
     $Null = Invoke-AzureRestMethod -AccessToken $resourceManagerToken -Uri $uri -Method Delete
 }
 
@@ -431,4 +431,3 @@ Function New-SentinelAlertRuleREST {
 
     $Null = Invoke-AzureRestMethod -AccessToken $resourceManagerToken -Uri $uri -Method PUT -Body $body
 }
-
